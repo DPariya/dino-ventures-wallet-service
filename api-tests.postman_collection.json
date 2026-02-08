@@ -1,0 +1,190 @@
+{
+  "info": {
+    "name": "Dino Ventures Wallet Service API",
+    "description": "Complete API test collection for internal wallet service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "user_001",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": ["{{base_url}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "Wallet Top-up",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"assetCode\": \"GOLD_COIN\",\n  \"amount\": 100,\n  \"idempotencyKey\": \"topup-{{$timestamp}}\",\n  \"metadata\": {\n    \"paymentId\": \"pay_test_123\",\n    \"paymentMethod\": \"credit_card\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/transactions/topup",
+          "host": ["{{base_url}}"],
+          "path": ["api", "transactions", "topup"]
+        }
+      }
+    },
+    {
+      "name": "Issue Bonus",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"assetCode\": \"LOYALTY_POINT\",\n  \"amount\": 50,\n  \"idempotencyKey\": \"bonus-{{$timestamp}}\",\n  \"metadata\": {\n    \"reason\": \"Welcome bonus\",\n    \"campaign\": \"new_user_2024\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/transactions/bonus",
+          "host": ["{{base_url}}"],
+          "path": ["api", "transactions", "bonus"]
+        }
+      }
+    },
+    {
+      "name": "Make Purchase",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"assetCode\": \"GOLD_COIN\",\n  \"amount\": 25,\n  \"idempotencyKey\": \"purchase-{{$timestamp}}\",\n  \"metadata\": {\n    \"itemId\": \"sword_001\",\n    \"itemName\": \"Epic Sword\",\n    \"itemType\": \"weapon\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/transactions/purchase",
+          "host": ["{{base_url}}"],
+          "path": ["api", "transactions", "purchase"]
+        }
+      }
+    },
+    {
+      "name": "Get All Balances",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/balance/{{user_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "balance", "{{user_id}}"]
+        }
+      }
+    },
+    {
+      "name": "Get Specific Asset Balance",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/balance/{{user_id}}?assetCode=GOLD_COIN",
+          "host": ["{{base_url}}"],
+          "path": ["api", "balance", "{{user_id}}"],
+          "query": [
+            {
+              "key": "assetCode",
+              "value": "GOLD_COIN"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Transaction History",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/transactions/{{user_id}}?limit=10&offset=0",
+          "host": ["{{base_url}}"],
+          "path": ["api", "transactions", "{{user_id}}"],
+          "query": [
+            {
+              "key": "limit",
+              "value": "10"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Test Idempotency (Duplicate Request)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"assetCode\": \"GOLD_COIN\",\n  \"amount\": 50,\n  \"idempotencyKey\": \"test-idempotency-fixed-key-123\",\n  \"metadata\": {\n    \"note\": \"Send this request twice to test idempotency\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/transactions/topup",
+          "host": ["{{base_url}}"],
+          "path": ["api", "transactions", "topup"]
+        }
+      }
+    },
+    {
+      "name": "Test Insufficient Balance",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"assetCode\": \"GOLD_COIN\",\n  \"amount\": 999999,\n  \"idempotencyKey\": \"insufficient-{{$timestamp}}\",\n  \"metadata\": {\n    \"note\": \"This should fail with insufficient balance error\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/transactions/purchase",
+          "host": ["{{base_url}}"],
+          "path": ["api", "transactions", "purchase"]
+        }
+      }
+    }
+  ]
+}

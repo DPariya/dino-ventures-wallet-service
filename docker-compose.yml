@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: wallet-postgres
+    environment:
+      POSTGRES_DB: wallet_service
+      POSTGRES_USER: wallet_admin
+      POSTGRES_PASSWORD: secure_password_change_in_production
+      POSTGRES_INITDB_ARGS: "-E UTF8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wallet_admin -d wallet_service"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wallet-network
+    restart: unless-stopped
+
+  # Wallet Service Application
+  wallet-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wallet-service-app
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: wallet_service
+      DB_USER: wallet_admin
+      DB_PASSWORD: secure_password_change_in_production
+      DB_POOL_MIN: 10
+      DB_POOL_MAX: 50
+      DB_CONNECTION_TIMEOUT_MS: 30000
+      DB_IDLE_TIMEOUT_MS: 10000
+      LOG_LEVEL: info
+      RATE_LIMIT_WINDOW_MS: 60000
+      RATE_LIMIT_MAX_REQUESTS: 100
+      MAX_RETRY_ATTEMPTS: 3
+      RETRY_DELAY_MS: 100
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - wallet-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: PgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: wallet-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@dinoventures.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - wallet-network
+    restart: unless-stopped
+    profiles:
+      - dev
+
+networks:
+  wallet-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
