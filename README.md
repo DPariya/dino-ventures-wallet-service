@@ -5,6 +5,7 @@ A production-grade internal wallet service built for high-traffic gaming platfor
 ## 🎯 Features
 
 ### Core Capabilities
+
 - ✅ **Double-Entry Ledger System**: Complete auditability with every transaction recorded as balanced debits and credits
 - ✅ **ACID Compliance**: Full transactional integrity using PostgreSQL's SERIALIZABLE isolation level
 - ✅ **Idempotency**: Duplicate request prevention with 24-hour idempotency key tracking
@@ -14,6 +15,7 @@ A production-grade internal wallet service built for high-traffic gaming platfor
 - ✅ **Production Ready**: Docker containerization, health checks, graceful shutdown, comprehensive logging
 
 ### Transaction Types
+
 1. **Wallet Top-up**: Users purchase virtual credits with real money
 2. **Bonus/Incentive**: System issues free credits (referrals, promotions, achievements)
 3. **Purchase/Spend**: Users spend credits on in-app items and services
@@ -21,6 +23,7 @@ A production-grade internal wallet service built for high-traffic gaming platfor
 ## 🏗️ Architecture
 
 ### Database Schema
+
 ```
 ┌─────────────────┐
 │  asset_types    │  (Gold Coins, Diamonds, Loyalty Points)
@@ -51,11 +54,14 @@ A production-grade internal wallet service built for high-traffic gaming platfor
 ### Concurrency & Deadlock Prevention
 
 #### Problem
+
 Multiple concurrent transactions on the same accounts can cause:
+
 - **Race Conditions**: Lost updates when balances are read and written simultaneously
 - **Deadlocks**: Circular wait when transactions lock accounts in different orders
 
 #### Solution
+
 1. **Serializable Isolation**: PostgreSQL's highest isolation level prevents phantom reads
 2. **Deterministic Lock Ordering**: Always lock accounts in sorted order by UUID
 3. **NOWAIT Locks**: Fail fast instead of waiting, enabling retry with exponential backoff
@@ -86,6 +92,7 @@ Purchase 50 Gold Coins:
 ```
 
 This ensures:
+
 - Complete audit trail
 - Mathematical balance verification (sum of all debits = sum of all credits)
 - Point-in-time balance reconstruction
@@ -94,6 +101,7 @@ This ensures:
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Docker and Docker Compose
 - Node.js 18+ (for local development)
 - PostgreSQL 15+ (for local development)
@@ -123,10 +131,12 @@ The service will be available at `http://localhost:3000`
 ### Database Schema & Seed Data
 
 The Docker setup automatically:
+
 1. Creates the database schema from `schema.sql`
 2. Seeds initial data from `seed.sql`
 
 To manually reset the database:
+
 ```bash
 docker-compose down -v  # Remove volumes
 docker-compose up -d    # Recreate with fresh data
@@ -156,6 +166,7 @@ npm run dev
 ## 📡 API Endpoints
 
 ### Base URL
+
 ```
 http://localhost:3000/api
 ```
@@ -165,11 +176,12 @@ http://localhost:3000/api
 **Endpoint**: `POST /api/transactions/topup`
 
 **Request Body**:
+
 ```json
 {
   "userId": "user_001",
   "assetCode": "GOLD_COIN",
-  "amount": 100.00,
+  "amount": 100.0,
   "idempotencyKey": "topup-user001-20240215-1234",
   "metadata": {
     "paymentId": "pay_xyz123",
@@ -179,6 +191,7 @@ http://localhost:3000/api
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -194,6 +207,7 @@ http://localhost:3000/api
 ```
 
 **cURL Example**:
+
 ```bash
 curl -X POST http://localhost:3000/api/transactions/topup \
   -H "Content-Type: application/json" \
@@ -210,6 +224,7 @@ curl -X POST http://localhost:3000/api/transactions/topup \
 **Endpoint**: `POST /api/transactions/bonus`
 
 **Request Body**:
+
 ```json
 {
   "userId": "user_002",
@@ -225,6 +240,7 @@ curl -X POST http://localhost:3000/api/transactions/topup \
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -241,6 +257,7 @@ curl -X POST http://localhost:3000/api/transactions/topup \
 ```
 
 **cURL Example**:
+
 ```bash
 curl -X POST http://localhost:3000/api/transactions/bonus \
   -H "Content-Type: application/json" \
@@ -260,11 +277,12 @@ curl -X POST http://localhost:3000/api/transactions/bonus \
 **Endpoint**: `POST /api/transactions/purchase`
 
 **Request Body**:
+
 ```json
 {
   "userId": "user_001",
   "assetCode": "GOLD_COIN",
-  "amount": 25.00,
+  "amount": 25.0,
   "idempotencyKey": "purchase-sword-user001-xyz",
   "metadata": {
     "itemId": "sword_legendary_001",
@@ -276,6 +294,7 @@ curl -X POST http://localhost:3000/api/transactions/bonus \
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -292,6 +311,7 @@ curl -X POST http://localhost:3000/api/transactions/bonus \
 ```
 
 **cURL Example**:
+
 ```bash
 curl -X POST http://localhost:3000/api/transactions/purchase \
   -H "Content-Type: application/json" \
@@ -311,9 +331,11 @@ curl -X POST http://localhost:3000/api/transactions/purchase \
 **Endpoint**: `GET /api/balance/:userId`
 
 **Query Parameters**:
+
 - `assetCode` (optional): Specific asset to query
 
 **Examples**:
+
 ```bash
 # Get all balances
 curl http://localhost:3000/api/balance/user_001
@@ -323,6 +345,7 @@ curl http://localhost:3000/api/balance/user_001?assetCode=GOLD_COIN
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -349,15 +372,18 @@ curl http://localhost:3000/api/balance/user_001?assetCode=GOLD_COIN
 **Endpoint**: `GET /api/transactions/:userId`
 
 **Query Parameters**:
+
 - `limit` (optional, default 50): Number of transactions
 - `offset` (optional, default 0): Pagination offset
 
 **Example**:
+
 ```bash
 curl http://localhost:3000/api/transactions/user_001?limit=10&offset=0
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -455,6 +481,7 @@ curl -X POST http://localhost:3000/api/transactions/topup \
 ## 🔒 Security Considerations
 
 ### Production Checklist
+
 - [ ] Change default database password in `.env`
 - [ ] Use strong, randomly generated passwords
 - [ ] Enable SSL/TLS for database connections
@@ -467,6 +494,7 @@ curl -X POST http://localhost:3000/api/transactions/topup \
 - [ ] Use secrets management (AWS Secrets Manager, HashiCorp Vault)
 
 ### Current Security Features
+
 - Helmet.js for HTTP header security
 - Rate limiting (100 requests/minute per IP)
 - Input validation with Joi
@@ -477,12 +505,15 @@ curl -X POST http://localhost:3000/api/transactions/topup \
 ## 📊 Monitoring & Observability
 
 ### Logs
+
 Logs are written to:
+
 - Console (stdout/stderr)
 - `logs/combined.log` - All logs
 - `logs/error.log` - Error logs only
 
 ### Log Levels
+
 - `error`: Critical errors
 - `warn`: Warnings and retry attempts
 - `info`: Important events (transactions, startup)
@@ -490,6 +521,7 @@ Logs are written to:
 - `debug`: Detailed debugging info
 
 ### Health Checks
+
 ```bash
 # Application health
 curl http://localhost:3000/health
@@ -505,7 +537,7 @@ docker ps  # Check HEALTH status
 SELECT NOW(), version();
 
 -- Verify double-entry balance (should return 0 rows if balanced)
-SELECT 
+SELECT
     t.id,
     SUM(CASE WHEN le.entry_type = 'debit' THEN le.amount ELSE -le.amount END) as balance
 FROM transactions t
@@ -514,7 +546,7 @@ GROUP BY t.id
 HAVING SUM(CASE WHEN le.entry_type = 'debit' THEN le.amount ELSE -le.amount END) != 0;
 
 -- Account balance summary
-SELECT 
+SELECT
     a.name,
     at.code,
     bc.balance
@@ -524,7 +556,7 @@ JOIN asset_types at ON bc.asset_type_id = at.id
 ORDER BY a.name, at.code;
 
 -- Recent transactions
-SELECT 
+SELECT
     t.id,
     tt.name as type,
     at.code as asset,
@@ -541,12 +573,14 @@ LIMIT 20;
 ## 🏗️ Technology Stack
 
 ### Backend
+
 - **Node.js 18**: JavaScript runtime
 - **Express.js**: Web framework
 - **PostgreSQL 15**: ACID-compliant relational database
 - **pg**: PostgreSQL client for Node.js
 
 ### Security & Utilities
+
 - **Helmet**: HTTP security headers
 - **express-rate-limit**: Rate limiting
 - **Joi**: Input validation
@@ -554,18 +588,21 @@ LIMIT 20;
 - **uuid**: Unique ID generation
 
 ### DevOps
+
 - **Docker**: Containerization
 - **Docker Compose**: Multi-container orchestration
 
 ## 🎯 Design Decisions
 
 ### Why Node.js?
+
 - High concurrency handling with event loop
 - Large ecosystem (npm)
 - Fast development cycle
 - Good async/await support for database operations
 
 ### Why PostgreSQL?
+
 - ACID compliance (critical for financial data)
 - Strong consistency guarantees
 - SERIALIZABLE isolation level
@@ -574,6 +611,7 @@ LIMIT 20;
 - Mature replication and backup tools
 
 ### Why Double-Entry Ledger?
+
 - Complete audit trail
 - Mathematical balance verification
 - Regulatory compliance friendly
@@ -581,6 +619,7 @@ LIMIT 20;
 - Supports complex financial reporting
 
 ### Why Balance Cache?
+
 - Performance: Avoids summing millions of ledger entries
 - Still maintains data integrity (updated atomically)
 - Can be rebuilt from ledger if corrupted
@@ -589,6 +628,7 @@ LIMIT 20;
 ## 🔧 Troubleshooting
 
 ### Database Connection Issues
+
 ```bash
 # Check if PostgreSQL is running
 docker-compose ps postgres
@@ -601,6 +641,7 @@ docker exec -it wallet-postgres psql -U wallet_admin -d wallet_service
 ```
 
 ### Application Not Starting
+
 ```bash
 # Check application logs
 docker-compose logs wallet-service
@@ -613,7 +654,9 @@ lsof -i :3000
 ```
 
 ### Deadlock Errors
+
 If you see deadlock errors in logs:
+
 1. Check the automatic retry mechanism is working
 2. Verify accounts are being locked in sorted order
 3. Review concurrent transaction load
@@ -622,18 +665,22 @@ If you see deadlock errors in logs:
 ## 📈 Performance Optimization
 
 ### Database Indexes
+
 All critical queries are optimized with indexes:
+
 - `idempotency_key` (unique, for fast duplicate checks)
 - `account_id + asset_type_id` (for balance queries)
 - `account_id + created_at` (for transaction history)
 - `user_id` (for account lookups)
 
 ### Connection Pooling
+
 - Min: 10 connections
 - Max: 50 connections
 - Adjust in `.env` based on load testing
 
 ### Caching Strategy
+
 - Balance cache reduces query load by 99%
 - Idempotency cache prevents duplicate processing
 - Both caches are ACID-compliant (updated in transactions)
@@ -658,30 +705,23 @@ CORS_ORIGIN=https://yourdomain.com
 ### Scaling Considerations
 
 **Horizontal Scaling**:
+
 - Application is stateless (can run multiple instances)
 - Use load balancer (AWS ALB, NGINX)
 - Database connection pooling handles concurrent connections
 
 **Vertical Scaling**:
+
 - Increase database instance size
 - Adjust connection pool size
 - Add read replicas for reporting
 
 **Database Optimization**:
+
 - Enable query performance insights
 - Set up automated backups
 - Configure replication for high availability
 - Use connection pooling at application layer
-
-## 📝 License
-
-MIT License - See LICENSE file for details
-
-## 👥 Support
-
-For issues, questions, or contributions:
-- Create an issue in the repository
-- Email: engineering@dinoventures.com
 
 ---
 
